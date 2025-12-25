@@ -16,11 +16,4 @@ void    test_write(void);
 void    test_read(void);
 void    test_strdup(void);
 
-/* Bonus tests */
-void    test_atoi_base(void);
-void    test_list_push_front(void);
-void    test_list_size(void);
-void    test_list_sort(void);
-void    test_list_remove_if(void);
-
 #endif

@@ -19,12 +19,13 @@ Este proyecto desarrolla una librería estática:
 
 ```
 libasm/
-│── main.c
 │── README.md
 │── Makefile
 │── include/
-│   └── libasm.h
-│
+│   │─  libasm.h
+│   │─  libasm_bonus.h
+│   │─  tests.h
+│   └── tests_bonus.h
 ├── srcs/
 │   ├── Makefile
 │   ├── mandatory/
@@ -34,51 +35,39 @@ libasm/
 │   │   ├── ft_write.s
 │   │   ├── ft_read.s
 │   │   └── ft_strdup.s
-│   │
 │   └── bonus/
 │       ├── ft_atoi_base.s
 │       ├── ft_list_push_front.s
 │       ├── ft_list_size.s
 │       ├── ft_list_sort.s
 │       └── ft_list_remove_if.s
-│
 └── tests/
-    ├── tests.h
-    ├── test_strlen.c
-    ├── test_strcpy.c
-    ├── test_strcmp.c
-    ├── test_write.c
-    ├── test_read.c
-    ├── test_strdup.c
-    ├── test_atoi_base.c
-    ├── test_list_push_front.c
-    ├── test_list_size.c
-    ├── test_list_sort.c
-    └── test_list_remove_if.c
+    ├── main.c
+    ├── main_bonus.c
+    ├── mandatory/
+    │   ├── test_strlen.c
+    │   ├── test_strdup.c
+    │   ├── test_strcpy.c
+    │   ├── test_strcmp.c
+    │   ├── test_read.c
+    │   └── test_write.c
+    └── bonus/
+        ├── test_atoi_base.c
+        ├── test_list_push_front.c
+        ├── test_list_size.c
+        ├── test_list_sort.c
+        └── test_list_remove_if.c
 ```
 
 ---
 
 # 🚀 Compilación
 
-### Mandatory:
+Desde la carpeta `srcs/`
+
 ```bash
 make
-```
-
-### Bonus:
-```bash
 make bonus
-```
-
-### Ejecutar menú interactivo:
-```bash
-./main
-```
-
-### Ejecutar todos los tests:
-```bash
-make test
 ```
 
 ---
@@ -86,9 +75,11 @@ make test
 # 🧠 Funciones Mandatory
 
 ## 🔹 `ft_strlen`
+
 Cuenta los caracteres de una cadena hasta `'\0'`.
 
 **ASM:**  
+
 - RAX = contador  
 - Leer bytes desde `[RDI + RAX]`  
 - Incrementar hasta encontrar 0  
@@ -96,9 +87,11 @@ Cuenta los caracteres de una cadena hasta `'\0'`.
 ---
 
 ## 🔹 `ft_strcpy`
+
 Copia `src` en `dst` incluyendo el `'\0'`.
 
 **ASM:**  
+
 - Guardar `dst` en RAX  
 - Copiar byte a byte  
 - Parar al copiar `0`  
@@ -106,9 +99,11 @@ Copia `src` en `dst` incluyendo el `'\0'`.
 ---
 
 ## 🔹 `ft_strcmp`
+
 Compara dos cadenas lexicográficamente.
 
 **ASM:**  
+
 - Leer bytes de ambas  
 - Si difieren → devolver resta  
 - Si ambos son `0` → return 0  
@@ -116,9 +111,11 @@ Compara dos cadenas lexicográficamente.
 ---
 
 ## 🔹 `ft_write`
+
 Wrapper de la syscall `write`.
 
 **ASM:**  
+
 - `RAX = 1`  
 - `syscall`  
 - Si error → setear `errno` con `__errno_location`  
@@ -126,9 +123,11 @@ Wrapper de la syscall `write`.
 ---
 
 ## 🔹 `ft_read`
+
 Wrapper de la syscall `read`.
 
 **ASM:**  
+
 - `RAX = 0`  
 - `syscall`  
 - Manejo de errores igual que `write`  
@@ -136,9 +135,11 @@ Wrapper de la syscall `read`.
 ---
 
 ## 🔹 `ft_strdup`
+
 Duplica una cadena usando `malloc`.
 
 **ASM:**  
+
 - Llamar a `ft_strlen`  
 - Reservar memoria  
 - Copiar con `ft_strcpy`  
@@ -148,9 +149,11 @@ Duplica una cadena usando `malloc`.
 # 🧠 Funciones Bonus
 
 ## 🔸 `ft_atoi_base`
+
 Convierte un número en una base arbitraria a entero.
 
 **ASM:**  
+
 - Validar base  
 - Saltar espacios  
 - Detectar signo  
@@ -159,9 +162,11 @@ Convierte un número en una base arbitraria a entero.
 ---
 
 ## 🔸 `ft_list_push_front`
+
 Inserta un nodo al inicio de la lista.
 
 **ASM:**  
+
 - Reservar memoria  
 - Asignar `data`  
 - Enlazar con head  
@@ -169,18 +174,22 @@ Inserta un nodo al inicio de la lista.
 ---
 
 ## 🔸 `ft_list_size`
+
 Cuenta los nodos de la lista.
 
 **ASM:**  
+
 - Recorrer `next`  
 - Incrementar contador  
 
 ---
 
 ## 🔸 `ft_list_sort`
+
 Ordena la lista usando bubble-sort.
 
 **ASM:**  
+
 - Dos bucles  
 - Comparar `data`  
 - Intercambiar si es necesario  
@@ -188,9 +197,11 @@ Ordena la lista usando bubble-sort.
 ---
 
 ## 🔸 `ft_list_remove_if`
+
 Elimina nodos cuyo `data` coincide con `ref`.
 
 **ASM:**  
+
 - Recorrer lista  
 - Si `cmp(data, ref) == 0`:  
   - `free_fct(data)`  
@@ -203,14 +214,16 @@ Elimina nodos cuyo `data` coincide con `ref`.
 
 Todos los tests están en `/tests` y se integran con un menú interactivo.
 
-Ejecutarlos:
+Para crear los ejecutables, desde la carpeta raíz:
+
 ```bash
-make test
+make
+make bonus
 ```
 
----
+y para ejecutarlos:
 
-# 👤 Autor
-
-Proyecto realizado por **Jose**.
-
+```bash
+./main
+./main_bonus
+```

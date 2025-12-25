@@ -3,14 +3,25 @@
 # ===========================
 
 NAME        =	main
+NAME_B		= 	main_bonus
 
-CC          = 	gcc
-CFLAGS      = 	-Wall -Wextra -Werror -Iinclude -Itests -fno-pie -no-pie
+CC			= 	gcc
+CFLAGS		= 	-Wall -Wextra -Werror -Iinclude -Itests -fno-pie -no-pie -MMD -MP
 
-SRC_DIR     = 	srcs
-TEST_DIR    = 	tests
+SRC_DIR		=	srcs
+MAND_SRCS	= 	tests/main.c $(wildcard tests/mandatory/*.c)
+MAND_OBJS	= 	$(MAND_SRCS:.c=.o)
+MAND_DEPS	= 	$(MAND_OBJS:.o=.d)
+
+BONUS_SRCS	= 	tests/main_bonus.c $(wildcard tests/bonus/*.c)
+BONUS_OBJS	= 	$(BONUS_SRCS:.c=.o)
+BONUS_DEPS	= 	$(BONUS_OBJS:.o=.d)
+
 LIBASM      = 	$(SRC_DIR)/libasm.a
-TEST_SRCS   = 	$(wildcard tests/*.c)
+LIBASM_B	=	$(SRC_DIR)/libasm_bonus.a
+
+ASM_SRCS	= 	$(wildcard $(SRC_DIR)/mandatory/*.s)
+ASM_SRCS_B	= 	$(wildcard $(SRC_DIR)/bonus/*.s)
 
 # ===========================
 #          COLORES
@@ -28,28 +39,50 @@ RESET   	= 	\033[0m
 
 all			: 	$(LIBASM) $(NAME)
 
-$(LIBASM)	:
+bonus		:	$(LIBASM_BONUS) $(NAME_B)
+
+# --- Librería ASM ---
+$(LIBASM)	:	$(ASM_SRCS)
 				@echo "$(BLUE)[LIBASM]$(RESET) Compilando mandatory..."
 				@$(MAKE) --no-print-directory -C $(SRC_DIR)
+$(LIBASM_B)	:	$(ASM_SRCS_B)
+				@echo "$(BLUE)[LIBASM]$(RESET) Compilando bonus..."
+				@$(MAKE) bonus --no-print-directory -C $(SRC_DIR)
+# --- Compilación de tests --- 
+%.o			: 	%.c 
+				@echo "$(BLUE)[CC]$(RESET) Compilando $<" 
+				@$(CC) $(CFLAGS) -c $< -o $@
 
-$(NAME)		: 	$(TEST_SRCS) $(LIB)
+# --- Enlazado final ---
+$(NAME)		: 	$(MAND_OBJS) $(LIBASM)
 				@echo "$(GREEN)[OK]$(RESET) Enlazando main con libasm.a"
-				@$(CC) $(CFLAGS) $(TEST_SRCS) -L$(SRC_DIR) -lasm -o $(NAME)
+				@$(CC) $(CFLAGS) $(MAND_OBJS) -L$(SRC_DIR) -lasm -o $(NAME)
 				@echo "$(GREEN)[DONE]$(RESET) Ejecutable creado: ./main"
+$(NAME_B)	: 	$(BONUS_OBJS) $(LIBASM_B)
+				@echo "$(GREEN)[OK]$(RESET) Enlazando main_bonus con libasm_bonus.a"
+				@$(CC) $(CFLAGS) $(BONUS_OBJS) -L$(SRC_DIR) -lasm_bonus -o $(NAME_B)
+				@echo "$(GREEN)[DONE]$(RESET) Ejecutable creado: ./main_bonus"
 
 clean		:
 				@$(MAKE) clean --no-print-directory -C $(SRC_DIR)
+				@rm -f $(MAND_OBJS) $(BONUS_OBJS) $(MAND_DEPS) $(BONUS_DEPS)
 				@echo "$(YELLOW)[CLEAN]$(RESET) Objetos eliminados"
 
 fclean		: 	clean
 				@$(MAKE) fclean --no-print-directory -C $(SRC_DIR)
-				@rm -f $(NAME)
+				@rm -f $(NAME) $(NAME_B)
 				@echo "$(RED)[FCLEAN]$(RESET) Ejecutables eliminados"
 
 re			: 	fclean all
 
 # ===========================
+#        DEPENDENCIAS
+# ===========================
+
+-include $(MAND_DEPS) $(BONUS_DEPS)
+
+# ===========================
 #          PHONY
 # ===========================
 
-.PHONY		: 	all clean fclean re
+.PHONY		: 	all clean fclean re bonus
