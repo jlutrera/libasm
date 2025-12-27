@@ -6,18 +6,53 @@
 ![School](https://img.shields.io/badge/42-Madrid-black)
 ![License](https://img.shields.io/badge/license-MIT-yellow)
 
-Implementación en **ensamblador NASM x86_64** de varias funciones estándar de la libc, siguiendo la **System V AMD64 ABI**, la sintaxis Intel y las normas del proyecto **42 Libasm**.
+Libasm es un proyecto cuyo objetivo es reimplementar funciones estándar de la libc utilizando exclusivamente **Assembly x86_64** bajo Linux.  
+El propósito es comprender en profundidad:
 
-Este proyecto desarrolla una librería estática:
+- El ABI System V AMD64  
+- El funcionamiento real de las syscalls  
+- La gestión de memoria  
+- La manipulación de punteros y cadenas  
+- La interacción entre C y ASM  
 
-- `libasm.a` (mandatory)
-- `libasm_bonus.a` (bonus)
+Este proyecto desarrolla una librería (`libasm.a`) escrita íntegramente en ASM, junto con una batería de tests interactivos y benchmarks para validar su comportamiento.
+
+---
+
+## 📑 Índice
+
+1. [Descripción del proyecto](#-descripción-del-proyecto)
+2. [Estructura](#-estructura-del-proyecto)
+3. [Compilación y uso](#-compilación)  
+4. [Funciones mandatory](#-funciones-mandatory)  
+5. [Funciones bonus](#-funciones-bonus)
+6. [Tests interactivos y benchmarks](#-tests-interactivos-y-benchmarks)  
+7. [Notas técnicas](#-notas-técnicas)  
+
+---
+
+## 🧩 Descripción del proyecto
+
+El objetivo es implementar una librería en Assembly que replique el comportamiento de varias funciones de la libc.  
+Las funciones deben:
+
+- Respetar el ABI System V AMD64  
+- Ser compatibles con Linux  
+- Manejar correctamente errores y `errno`  
+- Ser fieles a la implementación estándar  
+
+El proyecto incluye un sistema de tests interactivos que permite:
+
+- Comparar cada función con su equivalente en C  
+- Probar casos límite  
+- Medir rendimiento mediante benchmarks  
+- Validar comportamiento en tiempo real  
 
 ---
 
 ## 📁 Estructura del proyecto
 
-```
+```c
 libasm/
 │── README.md
 │── Makefile
@@ -61,7 +96,7 @@ libasm/
 
 ---
 
-# 🚀 Compilación
+## 🚀 Compilación
 
 Desde la carpeta `srcs/`
 
@@ -72,83 +107,93 @@ make bonus
 
 ---
 
-# 🧠 Funciones Mandatory
+## 🧱 Funciones mandatory
 
-## 🔹 `ft_strlen`
+### 🔹 `ft_strlen`
 
-Cuenta los caracteres de una cadena hasta `'\0'`.
+```c
+size_t ft_strlen(const char *s);
+```
 
-**ASM:**  
+Devuelve la longitud de una cadena terminada en \0.
+Implementada mediante un bucle que avanza byte a byte hasta encontrar el terminador.
 
-- RAX = contador  
-- Leer bytes desde `[RDI + RAX]`  
-- Incrementar hasta encontrar 0  
+- No modifica registros callee-saved
+- Devuelve el resultado en rax
+- Comportamiento idéntico a strlen estándar
+- strlen(NULL) → comportamiento indefinido (igual que libc)
 
----
+### 🔹 `ft_strcpy`
 
-## 🔹 `ft_strcpy`
+```c
+char *ft_strcpy(char *dst, const char *src);
+```
 
-Copia `src` en `dst` incluyendo el `'\0'`.
+Copia src en dst, incluyendo el byte nulo final.
 
-**ASM:**  
+- Devuelve dst en rax
+- Copia byte a byte
+- No comprueba solapamientos (igual que libc)
 
-- Guardar `dst` en RAX  
-- Copiar byte a byte  
-- Parar al copiar `0`  
+### 🔹 `ft_strcmp`
 
----
-
-## 🔹 `ft_strcmp`
+```c
+int ft_strcmp(const char *s1, const char *s2);
+```
 
 Compara dos cadenas lexicográficamente.
 
-**ASM:**  
+- Compara byte a byte
+- Devuelve la diferencia entre los primeros bytes distintos
+- Usa movzx para comparación unsigned
+- Comportamiento idéntico a strcmp
 
-- Leer bytes de ambas  
-- Si difieren → devolver resta  
-- Si ambos son `0` → return 0  
+### 🔹 `ft_write`
 
----
+```c
+ssize_t ft_write(int fd, const void *buf, size_t count);
+```
 
-## 🔹 `ft_write`
+Wrapper de la syscall write.
 
-Wrapper de la syscall `write`.
+- rax = 1 → syscall write
+- Manejo de errores POSIX:
+  - Si la syscall devuelve -errno, se asigna a errno mediante __errno_location
+  - Devuelve -1 en caso de error
+- Comportamiento idéntico a write estándar
 
-**ASM:**  
+### 🔹 `ft_read`
 
-- `RAX = 1`  
-- `syscall`  
-- Si error → setear `errno` con `__errno_location`  
-
----
-
-## 🔹 `ft_read`
+```c
+ssize_t ft_read(int fd, void *buf, size_t count);
+```
 
 Wrapper de la syscall `read`.
 
-**ASM:**  
+- rax = 0 → syscall read
+- Manejo de errores idéntico a ft_write
+- No valida punteros (igual que libc)
+- read(NULL) → segfault (comportamiento estándar)
 
-- `RAX = 0`  
-- `syscall`  
-- Manejo de errores igual que `write`  
+### 🔹 `ft_strdup`
 
----
-
-## 🔹 `ft_strdup`
+```c
+char *ft_strdup(const char *s);
+```
 
 Duplica una cadena usando `malloc`.
 
-**ASM:**  
-
-- Llamar a `ft_strlen`  
-- Reservar memoria  
-- Copiar con `ft_strcpy`  
+- Llama a ft_strlen para obtener longitud
+- Reserva len + 1 bytes
+- Copia con ft_strcpy
+- Devuelve NULL si malloc falla
+- No comprueba s == NULL (igual que libc → comportamiento indefinido)
 
 ---
 
-# 🧠 Funciones Bonus
+## ⭐ Funciones Bonus
 
-## 🔸 `ft_atoi_base`
+### 🔸 `ft_atoi_base`
 
 Convierte un número en una base arbitraria a entero.
 
@@ -161,7 +206,7 @@ Convierte un número en una base arbitraria a entero.
 
 ---
 
-## 🔸 `ft_list_push_front`
+### 🔸 `ft_list_push_front`
 
 Inserta un nodo al inicio de la lista.
 
@@ -173,7 +218,7 @@ Inserta un nodo al inicio de la lista.
 
 ---
 
-## 🔸 `ft_list_size`
+### 🔸 `ft_list_size`
 
 Cuenta los nodos de la lista.
 
@@ -184,7 +229,7 @@ Cuenta los nodos de la lista.
 
 ---
 
-## 🔸 `ft_list_sort`
+### 🔸 `ft_list_sort`
 
 Ordena la lista usando bubble-sort.
 
@@ -196,7 +241,7 @@ Ordena la lista usando bubble-sort.
 
 ---
 
-## 🔸 `ft_list_remove_if`
+### 🔸 `ft_list_remove_if`
 
 Elimina nodos cuyo `data` coincide con `ref`.
 
@@ -210,20 +255,25 @@ Elimina nodos cuyo `data` coincide con `ref`.
 
 ---
 
-# 🧪 Tests automáticos
+## 🧪 Tests interactivos y benchmarks
 
-Todos los tests están en `/tests` y se integran con un menú interactivo.
+El proyecto incluye un sistema de tests que permite:
 
-Para crear los ejecutables, desde la carpeta raíz:
+- Introducir cadenas y ver el comportamiento en tiempo real
+- Comparar ft_* con las funciones estándar
+- Probar errores (fd = -1, punteros inválidos, etc.)
+- Medir rendimiento mediante benchmarks de cientos de miles de iteraciones
+- Validar estabilidad y exactitud de la implementación
 
-```bash
-make
-make bonus
-```
+Cada función tiene su propio test interactivo y se compila con -fno-pie -no-pie
 
-y para ejecutarlos:
+---
 
-```bash
-./main
-./main_bonus
-```
+## 📝 Notas técnicas
+
+- Todas las funciones siguen el System V AMD64 ABI
+- Se usa NASM como ensamblador
+- Las syscalls se realizan mediante la instrucción syscall
+- errno se gestiona mediante __errno_location
+- La librería no se compila con -fno-pie -no-pie
+- Proyecto diseñado para Linux (no compatible con macOS)

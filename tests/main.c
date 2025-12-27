@@ -12,6 +12,13 @@ static void clear_screen()
     #endif
 }
 
+void clear_stdin(void)
+{
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
+}
+
 /* Leer opción de menú, borrando buffer si hay más de un carácter*/
 static int read_option(void)
 {
@@ -19,18 +26,10 @@ static int read_option(void)
 
     if (scanf("%d", &opt) != 1)
     {
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF);
+        clear_stdin();
         return -1;  // entrada inválida
     }
     return opt;
-}
-
-/* Pausa */
-static void wait_enter(void)
-{
-    printf(YELLOW "\nPress ENTER to continue..." RESET);
-    getchar(); getchar();
 }
 
 /* ===========================
@@ -58,6 +57,7 @@ int main(void)
         printf(GREEN "Select an option: " RESET);
         opt = read_option();
 
+        clear_stdin();
         switch (opt)
         {
             case 1: test_strlen(); break;
@@ -69,6 +69,5 @@ int main(void)
             case 0: return 0;
             default: continue;
         }
-        wait_enter();
     }
 }
