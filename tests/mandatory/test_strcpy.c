@@ -1,70 +1,53 @@
-#define _POSIX_C_SOURCE 199309L
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include "libasm.h"
+#include "tests.h"
 
-static long ns_diff(struct timespec a, struct timespec b)
+static long benchmark(char *(*fn)(char *, const char *), char *dst, const char *src)
 {
-    return (b.tv_sec - a.tv_sec) * 1000000000L + (b.tv_nsec - a.tv_nsec);
+    struct timespec t1, t2;
+    const int iterations = 300000;
+
+    clock_gettime(CLOCK_MONOTONIC, &t1);
+    for (int i = 0; i < iterations; i++)
+        fn(dst, src);
+    clock_gettime(CLOCK_MONOTONIC, &t2);
+
+    return ns_diff(t1, t2);
 }
 
 void test_strcpy(void)
 {
-    printf("\n--- TEST INTERACTIVO ft_strcpy + BENCHMARK ---\n");
-    printf("Introduce cadenas para copiar con strcpy() y ft_strcpy().\n");
-    printf("Escribe \"exit\" para salir.\n\n");
-
     char buffer[2048];
     char dst1[2048];
     char dst2[2048];
 
     while (1)
     {
-        printf("Input: ");
+        printf("******************************************\n");
+        printf("* TEST INTERACTIVO ft_strcpy + BENCHMARK *\n");
+        printf("******************************************\n");
+        printf("Introduce cadenas para copiar con strcpy() y ft_strcpy().\n");
+        printf("Escribe \"exit\" para salir.\n\n");
+
+        printf("--- Entrada ---\n");
+        printf("  Input: ");
         fflush(stdout);
 
         if (!fgets(buffer, sizeof(buffer), stdin))
-        {
-            printf("Error leyendo input.\n");
             break;
-        }
-
-        buffer[strcspn(buffer, "\n")] = '\0';
-
-        if (strcmp(buffer, "exit") == 0)
+        if (clean_buf(buffer, strlen(buffer)))
             break;
 
-        /* --- Comparación funcional --- */
         strcpy(dst1, buffer);
         ft_strcpy(dst2, buffer);
 
-        printf("\nResultado funcional:\n");
+        printf("\n--- Resultados ---\n");
         printf("  strcpy:    \"%s\"\n", dst1);
         printf("  ft_strcpy: \"%s\"\n", dst2);
-        printf("  Resultado: %s\n",
-               strcmp(dst1, dst2) == 0 ? "OK" : "FAIL");
 
         /* --- Benchmark --- */
-        const int N = 2000000;  // 2 millones de iteraciones
-        struct timespec t1, t2;
+        long time_strcpy = benchmark(strcpy, dst1, buffer);
+        long time_ft = benchmark(ft_strcpy, dst2, buffer);
 
-        // strcpy benchmark
-        clock_gettime(CLOCK_MONOTONIC, &t1);
-        for (int i = 0; i < N; i++)
-            strcpy(dst1, buffer);
-        clock_gettime(CLOCK_MONOTONIC, &t2);
-        long time_strcpy = ns_diff(t1, t2);
-
-        // ft_strcpy benchmark
-        clock_gettime(CLOCK_MONOTONIC, &t1);
-        for (int i = 0; i < N; i++)
-            ft_strcpy(dst2, buffer);
-        clock_gettime(CLOCK_MONOTONIC, &t2);
-        long time_ft = ns_diff(t1, t2);
-
-        printf("\nBenchmark (%d iteraciones):\n", N);
+        printf("\n--- Benchmark ---\n");
         printf("  strcpy:    %ld ns\n", time_strcpy);
         printf("  ft_strcpy: %ld ns\n", time_ft);
 

@@ -9,19 +9,18 @@ CC			= 	gcc
 CFLAGS		= 	-Wall -Wextra -Werror -Iinclude -Itests -fno-pie -no-pie -MMD -MP
 
 SRC_DIR		=	srcs
-MAND_SRCS	= 	tests/main.c $(wildcard tests/mandatory/*.c)
+
+MAND_SRCS	= 	$(wildcard tests/mandatory/*.c)
 MAND_OBJS	= 	$(MAND_SRCS:.c=.o)
 MAND_DEPS	= 	$(MAND_OBJS:.o=.d)
+ASM_SRCS	= 	$(wildcard $(SRC_DIR)/mandatory/*.s)
+LIBASM      = 	$(SRC_DIR)/libasm.a
 
-BONUS_SRCS	= 	tests/main_bonus.c $(wildcard tests/bonus/*.c)
+BONUS_SRCS	= 	$(wildcard tests/bonus/*.c)
 BONUS_OBJS	= 	$(BONUS_SRCS:.c=.o)
 BONUS_DEPS	= 	$(BONUS_OBJS:.o=.d)
-
-LIBASM      = 	$(SRC_DIR)/libasm.a
-LIBASM_B	=	$(SRC_DIR)/libasm_bonus.a
-
-ASM_SRCS	= 	$(wildcard $(SRC_DIR)/mandatory/*.s)
 ASM_SRCS_B	= 	$(wildcard $(SRC_DIR)/bonus/*.s)
+LIBASM_B	=	$(SRC_DIR)/libasm_bonus.a
 
 # ===========================
 #          COLORES
@@ -45,6 +44,7 @@ bonus		:	$(LIBASM_BONUS) $(NAME_B)
 $(LIBASM)	:	$(ASM_SRCS)
 				@echo "$(BLUE)[LIBASM]$(RESET) Compilando mandatory..."
 				@$(MAKE) --no-print-directory -C $(SRC_DIR)
+			
 $(LIBASM_B)	:	$(ASM_SRCS_B)
 				@echo "$(BLUE)[LIBASM]$(RESET) Compilando bonus..."
 				@$(MAKE) bonus --no-print-directory -C $(SRC_DIR)
@@ -58,6 +58,7 @@ $(NAME)		: 	$(MAND_OBJS) $(LIBASM)
 				@echo "$(GREEN)[OK]$(RESET) Enlazando main con libasm.a"
 				@$(CC) $(CFLAGS) $(MAND_OBJS) -L$(SRC_DIR) -lasm -o $(NAME)
 				@echo "$(GREEN)[DONE]$(RESET) Ejecutable creado: ./main"
+
 $(NAME_B)	: 	$(BONUS_OBJS) $(LIBASM_B)
 				@echo "$(GREEN)[OK]$(RESET) Enlazando main_bonus con libasm_bonus.a"
 				@$(CC) $(CFLAGS) $(BONUS_OBJS) -L$(SRC_DIR) -lasm_bonus -o $(NAME_B)

@@ -8,6 +8,13 @@
 #define BLUE    "\033[1;34m"
 #define RESET   "\033[0m"
 
+/* The linked list function will use the following structure */
+typedef struct  s_list
+{
+    void *data;
+    struct s_list *next;
+}               t_list;
+
 /* Bonus tests */
 void    test_atoi_base(void);
 void    test_list_push_front(void);

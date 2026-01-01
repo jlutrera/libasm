@@ -1,76 +1,57 @@
-#define _POSIX_C_SOURCE 200809L
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include "libasm.h"
+#include "tests.h"
 
 volatile char *sink_strdup;   // evita optimización del compilador
 
-static long ns_diff(struct timespec a, struct timespec b)
+static long benchmark(char *(*fn)(const char *), const char *s)
 {
-    return (b.tv_sec - a.tv_sec) * 1000000000L + (b.tv_nsec - a.tv_nsec);
+    struct timespec t1, t2;
+    const int iterations = 300000;
+
+    clock_gettime(CLOCK_MONOTONIC, &t1);
+    for (int i = 0; i < iterations; i++)
+    {
+        sink_strdup = fn(s);
+        free((void *)sink_strdup);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &t2);
+
+    return ns_diff(t1, t2);
 }
 
 void test_strdup(void)
 {
-    printf("\n=== TEST INTERACTIVO ft_strdup + BENCHMARK ===\n");
-    printf("Introduce cadenas para duplicar con strdup() y ft_strdup().\n");
-    printf("Escribe \"exit\" para salir.\n\n");
-
     char buffer[2048];
 
     while (1)
     {
-        printf("Input: ");
+        printf("******************************************\n");
+        printf("* TEST INTERACTIVO ft_strdup + BENCHMARK *\n");
+        printf("******************************************\n");
+        printf("Introduce cadenas para duplicar con strdup() y ft_strdup().\n");
+        printf("Escribe \"exit\" para salir.\n\n");
+
+        printf("--- Entrada ---\n");
+        printf("  Input: ");
         fflush(stdout);
 
         if (!fgets(buffer, sizeof(buffer), stdin))
-        {
-            printf("Error leyendo input.\n");
             break;
-        }
-
-        buffer[strcspn(buffer, "\n")] = '\0';
-
-        if (strcmp(buffer, "exit") == 0)
+        if (clean_buf(buffer, strlen(buffer)))
             break;
 
         /* --- Comparación funcional --- */
         char *a = strdup(buffer);
         char *b = ft_strdup(buffer);
 
-        printf("\nResultado funcional:\n");
+        printf("\n--- Resultados ---\n");
         printf("  strdup:    \"%s\"\n", a);
         printf("  ft_strdup: \"%s\"\n", b);
-        printf("  Resultado: %s\n",
-               (strcmp(a, b) == 0 ? "OK" : "FAIL"));
 
         /* --- Benchmark --- */
-        const int N = 500000;  // medio millón de duplicaciones
-        struct timespec t1, t2;
+        long time_std = benchmark(strdup, buffer);
+        long time_ft = benchmark(ft_strdup, buffer);
 
-        // Benchmark strdup
-        clock_gettime(CLOCK_MONOTONIC, &t1);
-        for (int i = 0; i < N; i++)
-        {
-            sink_strdup = strdup(buffer);
-            free((void *)sink_strdup);
-        }
-        clock_gettime(CLOCK_MONOTONIC, &t2);
-        long time_std = ns_diff(t1, t2);
-
-        // Benchmark ft_strdup
-        clock_gettime(CLOCK_MONOTONIC, &t1);
-        for (int i = 0; i < N; i++)
-        {
-            sink_strdup = ft_strdup(buffer);
-            free((void *)sink_strdup);
-        }
-        clock_gettime(CLOCK_MONOTONIC, &t2);
-        long time_ft = ns_diff(t1, t2);
-
-        printf("\nBenchmark (%d iteraciones):\n", N);
+        printf("\n--- Benchmark ---\n");
         printf("  strdup:    %ld ns\n", time_std);
         printf("  ft_strdup: %ld ns\n", time_ft);
 

@@ -4,7 +4,9 @@
 
 void test_list_size(void)
 {
-    printf("\n--- TEST ft_list_size ---\n");
+    printf("\n=== TEST INTERACTIVO ft_list_size ===\n");
+    printf("Introduce una cadena y una base para convertir.\n");
+    printf("Escribe \"exit\" en cualquiera de los campos para salir.\n\n");   
 
     t_list *lst = NULL;
 

@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "tests.h"
 
 /* Limpiar pantalla */

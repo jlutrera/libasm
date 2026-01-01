@@ -1,3 +1,13 @@
+; **************************************************************************
+; *                        size_t strlen(const char *s)                    *
+; **************************************************************************
+
+; The strlen() function calculates the length of the string pointed to by s,
+; excluding the terminating null byte ('\0').
+; The strlen() function returns the number of bytes in 
+; the string pointed to by s.
+; **************************************************************************
+
 global ft_strlen            ; *s = rdi (puntero al primer argumento)
 
 section .text
