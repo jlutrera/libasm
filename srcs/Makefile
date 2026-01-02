@@ -11,7 +11,7 @@ BONUS_SRCS		= $(wildcard bonus/*.s)
 MANDATORY_OBJS 	= $(MANDATORY_SRCS:.s=.o)
 BONUS_OBJS     	= $(BONUS_SRCS:.s=.o)
 
-NASM			= nasm -f elf64
+NASM			= nasm -f elf64 -g -F dwarf
 
 # ===========================
 #          COLORES

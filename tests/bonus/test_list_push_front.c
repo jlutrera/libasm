@@ -1,21 +1,33 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "libasm_bonus.h"
+#include "tests_bonus.h"
 
 void test_list_push_front(void)
 {
-    printf("\n=== TEST INTERACTIVO ft_list_push_front ===\n");
-    printf("Introduce una cadena y una base para convertir.\n");
-    printf("Escribe \"exit\" en cualquiera de los campos para salir.\n\n");
-
     t_list *lst = NULL;
+    char buf[256];
 
-    ft_list_push_front(&lst, "c");
-    ft_list_push_front(&lst, "b");
-    ft_list_push_front(&lst, "a");
+    clear_screen();
+    printf("***************************************\n");
+    printf("* TEST INTERACTIVO ft_list_push_front *\n");
+    printf("***************************************\n\n");
+    printf("Introduce valores para añadir a la lista.\n");
+    printf("Escribe \"exit\" para salir.\n");
 
-    for (t_list *p = lst; p; p = p->next)
-        printf("Nodo: %s\n", (char *)p->data);
+    while (1)
+    { 
+        printf("\n  Valor: ");
+        fflush(stdout);
 
-    printf("\n");
+        if (!fgets(buf, sizeof(buf), stdin))
+            break;
+
+        if (clean_buf(buf, strlen(buf)) == 1)
+            break;
+
+        ft_list_push_front(&lst, strdup(buf));
+        
+        printf("  Lista actual: ");
+        list_print(lst);
+    }
+
+    clear_lst(&lst);
 }

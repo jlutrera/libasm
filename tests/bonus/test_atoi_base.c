@@ -1,42 +1,38 @@
-#include <stdio.h>
-#include <string.h>
-#include "libasm_bonus.h"
+#include "tests_bonus.h"
 
-/* ---------------------------------------------------------
-   Test interactivo + benchmark
-   --------------------------------------------------------- */
 void test_atoi_base(void)
 {
-    printf("\n=== TEST INTERACTIVO ft_atoi_base ===\n");
-    printf("Introduce una cadena y una base para convertir.\n");
-    printf("Escribe \"exit\" en cualquiera de los campos para salir.\n\n");
-
     char str[256];
     char base[256];
 
-    while (1)
+    do
     {
-        printf("Cadena: ");
+        clear_screen();
+        printf("*********************************\n");
+        printf("* TEST INTERACTIVO ft_atoi_base *\n");
+        printf("*********************************\n\n");
+        printf("Introduce una cadena y una base para convertir.\n");
+        printf("Escribe \"exit\" en cualquiera de los campos para salir.\n\n");
+
+        printf("  Array: ");
         fflush(stdout);
 
         if (!fgets(str, sizeof(str), stdin))
             break;
 
-        str[strcspn(str, "\n")] = '\0';
-        if (strcmp(str, "exit") == 0)
+        if (clean_buf(str, strlen(str)) == 1)
             break;
 
-        printf("Base:   ");
+        printf("  Base:   ");
         fflush(stdout);
 
         if (!fgets(base, sizeof(base), stdin))
             break;
 
-        base[strcspn(base, "\n")] = '\0';
-        if (strcmp(base, "exit") == 0)
+        if (clean_buf(base, strlen(base)) == 1)
             break;
 
         int a = ft_atoi_base(str, base);
-        printf("  Resultado:  %d\n", a);
-	}
+        printf("  Resultado:  %d\n\n", a);
+	} while (not_exit());
 }

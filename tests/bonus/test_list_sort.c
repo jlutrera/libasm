@@ -1,24 +1,59 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include "libasm_bonus.h"
+#include "tests_bonus.h"
+
+static t_list *ft_create_elem(void *data)
+{
+    t_list *node = malloc(sizeof(t_list));
+    if (!node)
+        return NULL;
+    node->data = data;
+    node->next = NULL;
+    return node;
+}
+
+static void ft_push_element(t_list **begin_list, void *data)
+{
+    t_list *node = ft_create_elem(data);
+    if (!node)
+        return;
+    node->next = *begin_list;
+    *begin_list = node;
+}
 
 void test_list_sort(void)
 {
-    printf("\n=== TEST INTERACTIVO ft_list_sort ===\n");
-    printf("Introduce una cadena y una base para convertir.\n");
-    printf("Escribe \"exit\" en cualquiera de los campos para salir.\n\n");
-
     t_list *lst = NULL;
 
-    ft_list_push_front(&lst, strdup("c"));
-    ft_list_push_front(&lst, strdup("a"));
-    ft_list_push_front(&lst, strdup("b"));
+    do
+    {
+        clear_screen();
+        printf("*********************************\n");
+        printf("* TEST INTERACTIVO ft_list_sort *\n");
+        printf("*********************************\n\n");
+        printf("--- Creación de la lista ---\n");
+        printf("Crea una lista introduciendo valores.\n");
+        printf("Para finalizar la lista, introduce \"exit\".\n");
+        while (1)
+        {
+            char buf[256];
+            printf("  Valor: ");
+            fflush(stdout);
+            if (!fgets(buf, sizeof(buf), stdin))
+                break;
 
-    ft_list_sort(&lst, (int (*)())strcmp);
+            if (clean_buf(buf, strlen(buf)) == 1)
+                break;
 
-    for (t_list *p = lst; p; p = p->next)
-        printf("%s\n", (char *)p->data);
+            ft_push_element(&lst, strdup(buf));
+        }
 
-    printf("\n");
+        printf("  Lista inicial: ");
+        list_print(lst);
+
+        printf("\n--- Ordenamiento de la lista ---\n");
+        ft_list_sort(&lst, strcmp);
+        printf("  Lista ordenada: ");
+        list_print(lst);
+        clear_lst(&lst);
+    } while (not_exit());
 }
+

@@ -1,18 +1,40 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "libasm_bonus.h"
+#include "tests_bonus.h"
 
 void test_list_size(void)
 {
-    printf("\n=== TEST INTERACTIVO ft_list_size ===\n");
-    printf("Introduce una cadena y una base para convertir.\n");
-    printf("Escribe \"exit\" en cualquiera de los campos para salir.\n\n");   
-
     t_list *lst = NULL;
+    char buf[256];
+    int size;
 
-    ft_list_push_front(&lst, "c");
-    ft_list_push_front(&lst, "b");
-    ft_list_push_front(&lst, "a");
+    do
+    {
+        clear_screen();
+        printf("*********************************\n");
+        printf("* TEST INTERACTIVO ft_list_size *\n");
+        printf("*********************************\n\n");
+        printf("--- Creación de la lista ---\n");
+        printf("Crea una lista introduciendo valores.\n");
+        printf("Para finalizar la lista, introduce \"exit\".\n");
+        while (1)
+        {
+            
+            printf("  Valor: ");
+            fflush(stdout);
+            if (!fgets(buf, sizeof(buf), stdin))
+                break;
 
-    printf("size = %d (esperado 3)\n\n", ft_list_size(lst));
+            if (clean_buf(buf, strlen(buf)) == 1)
+                break;
+
+            ft_list_push_front(&lst, strdup(buf));
+        }
+
+        printf("  Lista : ");
+        list_print(lst);
+
+        printf("\n--- Respuesta ---\n");
+        size = ft_list_size(lst);
+        printf("  Tamaño de la lista: %d\n\n", size);
+        clear_lst(&lst);
+    } while (not_exit());
 }

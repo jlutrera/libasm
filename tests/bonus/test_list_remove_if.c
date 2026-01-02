@@ -1,24 +1,54 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include "libasm_bonus.h"
+#include "tests_bonus.h"
 
 void test_list_remove_if(void)
 {
-    printf("\n=== TEST INTERACTIVO ft_list_remove_if ===\n");
-    printf("Introduce una cadena y una base para convertir.\n");
-    printf("Escribe \"exit\" en cualquiera de los campos para salir.\n\n");
-
     t_list *lst = NULL;
+    char buf[256];
 
-    ft_list_push_front(&lst, strdup("c"));
-    ft_list_push_front(&lst, strdup("b"));
-    ft_list_push_front(&lst, strdup("a"));
+    do
+    {
+        clear_screen();
+        printf("**************************************\n");
+        printf("* TEST INTERACTIVO ft_list_remove_if *\n");
+        printf("**************************************\n\n"); 
+        printf("--- Creación de la lista ---\n");
+        printf("Crea una lista introduciendo valores.\n");
+        printf("Para finalizar la lista, introduce \"exit\".\n");
+        while (1)
+        {
+            printf("  Valor: ");
+            fflush(stdout);
+            if (!fgets(buf, sizeof(buf), stdin))
+                break;
 
-    ft_list_remove_if(&lst, "b", (int (*)())strcmp, free);
+            if (clean_buf(buf, strlen(buf)) == 1)
+                break;
 
-    for (t_list *p = lst; p; p = p->next)
-        printf("%s\n", (char *)p->data);
+            ft_list_push_front(&lst, strdup(buf));
+        }
 
-    printf("\n");
+        printf("  Lista inicial: ");
+        list_print(lst);
+
+        printf("\n--- Eliminación de elementos ---\n");
+        printf("Introduce valores a eliminar de la lista.\n");
+        printf("Escribe \"exit\" para terminar de eliminar.\n");
+        while (1)
+        {
+            printf("\n  Valor a eliminar: ");
+            fflush(stdout);
+
+            if (!fgets(buf, sizeof(buf), stdin))
+                break;
+            
+            if (clean_buf(buf, strlen(buf)) == 1)
+                break;
+
+            ft_list_remove_if(&lst, buf, strcmp, free);
+
+            printf("  Lista actual: ");
+            list_print(lst);
+        }
+        clear_lst(&lst);
+    } while (not_exit());
 }

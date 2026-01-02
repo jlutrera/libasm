@@ -76,6 +76,8 @@ fclean		: 	clean
 
 re			: 	fclean all
 
+rebonus		:	fclean bonus
+
 # ===========================
 #        DEPENDENCIAS
 # ===========================
@@ -86,4 +88,4 @@ re			: 	fclean all
 #          PHONY
 # ===========================
 
-.PHONY		: 	all clean fclean re bonus
+.PHONY		: 	all clean fclean re bonus rebonus

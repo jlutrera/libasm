@@ -1,173 +1,142 @@
 global ft_atoi_base
-
 section .text
 
+; int ft_atoi_base(char *str, char *base)
+;   rdi = str
+;   rsi = base
+;   eax = return 
+
 ft_atoi_base:
+    push rbp
+    mov rbp, rsp
     push rbx
     push r12
     push r13
     push r14
-    push r15
 
-    mov r14, rdi        ; r14 = str
-    mov r13, rsi        ; r13 = base
+    xor eax, eax
+    test rdi, rdi
+    jz .error
+    test rsi, rsi
+    jz .error
 
-    ; validar base
-    mov rdi, r13
-    call validate_base
-    test rax, rax
-    jz .invalid
-    mov r12, rax        ; r12 = base_len
+; ---------------------------------------
+; Validar base y calcular longitud
+; ---------------------------------------
+    xor rcx, rcx              ; rcx = len
 
-    ; saltar espacios
-    mov rdi, r14
-.skip_spaces:
-    mov al, [rdi]
-    cmp al, 9
-    jb .check_space
-    cmp al, 13
-    jbe .inc_str
-.check_space:
-    cmp al, 32
-    jne .done_skip
-.inc_str:
+.base_len_loop:
+    mov bl, [rsi + rcx]
+    test bl, bl
+    jz .base_len_done
+
+    ; caracteres prohibidos
+    cmp bl, '+'
+    je .error
+    cmp bl, '-'
+    je .error
+    cmp bl, ' '
+    je .error
+    cmp bl, 9
+    jb .check_dup
+    cmp bl, 13
+    jbe .error
+
+.check_dup:
+    mov rdx, rcx
+.dup_loop:
+    test rdx, rdx
+    jz .dup_ok
+    dec rdx
+    cmp bl, [rsi + rdx]
+    je .error
+    jmp .dup_loop
+
+.dup_ok:
+    inc rcx
+    jmp .base_len_loop
+
+.base_len_done:
+    cmp rcx, 2
+    jb .error
+    mov r12d, ecx             ; base_len
+
+; ---------------------------------------
+; Saltar espacios iniciales
+; ---------------------------------------
+.skip_space:
+    mov bl, [rdi]
+    cmp bl, ' '
+    je .skip_inc
+    cmp bl, 9
+    jb .sign
+    cmp bl, 13
+    jbe .skip_inc
+    jmp .sign
+
+.skip_inc:
     inc rdi
-    jmp .skip_spaces
-.done_skip:
+    jmp .skip_space
 
-    ; signo
-    mov rbx, 1
-.sign_loop:
-    mov al, [rdi]
-    cmp al, '+'
-    je .plus
-    cmp al, '-'
-    je .minus
+; ---------------------------------------
+; Signo
+; ---------------------------------------
+.sign:
+    mov r13d, 1
+    cmp byte [rdi], '-'
+    jne .check_plus
+    mov r13d, -1
+    inc rdi
     jmp .convert
 
-.plus:
+.check_plus:
+    cmp byte [rdi], '+'
+    jne .convert
     inc rdi
-    jmp .sign_loop
 
-.minus:
-    imul rbx, rbx, -1
-    inc rdi
-    jmp .sign_loop
-
+; ---------------------------------------
+; Conversión
+; ---------------------------------------
 .convert:
-    xor r15, r15        ; r15 = result
+    xor r14d, r14d            ; value = 0
 
-.loop:
-    mov dl, [rdi]
-    test dl, dl
-    je .finish
+.convert_loop:
+    mov bl, [rdi]
+    test bl, bl
+    jz .done
 
-    ; buscar índice del dígito
-    mov rsi, r13        ; base
-    mov rcx, r12        ; base_len
-    mov rdi, r13
-    call index_in_base  ; rax = index o -1
+    xor rcx, rcx
+.find_char:
+    cmp rcx, r12
+    je .error
+    cmp bl, [rsi + rcx]
+    je .found
+    inc rcx
+    jmp .find_char
 
-    cmp rax, -1
-    je .finish
+.found:
+    imul r14d, r12d           ; value *= base_len
+    add r14d, ecx             ; value += digit
+    inc rdi
+    jmp .convert_loop
 
-    ; result = result * base_len + digit
-    mov rdx, r15
-    imul rdx, r12
-    add rdx, rax
-    mov r15, rdx
+; ---------------------------------------
+; Final
+; ---------------------------------------
+.done:
+    imul r14d, r13d           ; aplicar signo
+    mov eax, r14d
+    jmp .exit
 
-    inc rdi             ; AVANZAR EN LA CADENA
-    jmp .loop
+.error:
+    xor eax, eax
 
-.finish:
-    mov rax, r15
-    imul rax, rbx
-    jmp .cleanup
-
-.invalid:
-    xor rax, rax
-
-.cleanup:
-    pop r15
+.exit:
     pop r14
     pop r13
     pop r12
     pop rbx
+    pop rbp
     ret
-
-
-; ---------------------------------------------------------
-; validate_base
-; ---------------------------------------------------------
-validate_base:
-    xor rcx, rcx
-.len_loop:
-    mov al, [rdi + rcx]
-    test al, al
-    je .check_len
-    cmp al, '+'
-    je .fail
-    cmp al, '-'
-    je .fail
-    cmp al, ' '
-    je .fail
-    cmp al, 9
-    jb .ok_char
-    cmp al, 13
-    jbe .fail
-.ok_char:
-    inc rcx
-    jmp .len_loop
-
-.check_len:
-    cmp rcx, 2
-    jb .fail
-
-    mov rdx, 0
-.outer:
-    cmp rdx, rcx
-    jge .ok
-    mov r8b, [rdi + rdx]
-    mov r9, rdx
-    inc r9
-.inner:
-    cmp r9, rcx
-    jge .next
-    cmp r8b, [rdi + r9]
-    je .fail
-    inc r9
-    jmp .inner
-.next:
-    inc rdx
-    jmp .outer
-
-.ok:
-    mov rax, rcx
-    ret
-
-.fail:
-    xor rax, rax
-    ret
-
-
-; ---------------------------------------------------------
-; index_in_base
-; ---------------------------------------------------------
-index_in_base:
-    xor rax, rax
-.loop2:
-    cmp rax, rcx
-    jge .not_found
-    cmp dl, [rdi + rax]
-    je .found
-    inc rax
-    jmp .loop2
-.found:
-    ret
-.not_found:
-    mov rax, -1
-    ret
-
 
 section .note.GNU-stack noalloc noexec nowrite progbits

@@ -8,12 +8,11 @@
 #define BLUE    "\033[1;34m"
 #define RESET   "\033[0m"
 
-/* The linked list function will use the following structure */
-typedef struct  s_list
-{
-    void *data;
-    struct s_list *next;
-}               t_list;
+/* Libraries */
+#include <stdio.h>
+#include <string.h>
+#include "libasm_bonus.h"
+#include <stdlib.h>
 
 /* Bonus tests */
 void    test_atoi_base(void);
@@ -22,4 +21,9 @@ void    test_list_size(void);
 void    test_list_sort(void);
 void    test_list_remove_if(void);
 
+int     clean_buf(char *buf, ssize_t ret);
+void    clear_lst(t_list **lst);
+void    list_print(t_list *lst);
+int     not_exit(void);
+void    clear_screen(void);
 #endif

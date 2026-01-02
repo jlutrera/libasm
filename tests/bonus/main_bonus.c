@@ -2,16 +2,6 @@
 #include <stdlib.h>
 #include "tests_bonus.h"
 
-/* Limpiar pantalla */
-static void clear_screen()
-{
-    #ifdef _WIN32
-        system("cls");
-    #else
-        system("clear");
-    #endif
-}
-
 void clear_stdin(void)
 {
     int c;
